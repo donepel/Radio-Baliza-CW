@@ -1,7 +1,7 @@
 /*********************************************************
- * Radiobaliza CW que envia tonos de audio 
+ * Radiobaliza CW que envia tonos de audio armada con Arduino Mega 
  * by @Don_Epel
- * armada con Arduino Mega 
+ * 
  * Fecha 10/11/2019
  * Version 0.1
  *********************************************************/
@@ -23,19 +23,20 @@ void setup()
 void loop() 
 {
   // put your main code here, to run repeatedly:
-
+Oscilador (AUDIO,FREC);
 }
 
 //Funcion de oscilador
-//Recibe: Nada
+//Recibe: El puerto a oscilar y la frecuencia
 //Retorna: Nada
-//Nota: Se genera una señal cuadrada por el puerto BUZZER  de una frecuencia dada (FREC)
-void Oscilador ()
+//Nota: Se genera una señal cuadrada por el pin PUERTO de una frecuencia dada (FREC)
+//Ejemplo de llamada Oscilador(PUERTO,FREC);
+void Oscilador (unsigned char salida,unsigned int frecuencia)
 {
-    unsigned char periodo = 100000/FREC; //Defino el periodo con la formula de T=1seg/frec en  ms
+    unsigned int periodo = 100000/frecuencia; //Defino el periodo con la formula de T=1seg/frec en  ms
     //Armo un oscilador de la mitad del periodo calculado, mitad del ciclo en alto, mitad den bajo
-    digitalWrite(AUDIO,HIGH);
+    digitalWrite(salida,HIGH);
     delayMicroseconds(periodo/2);
-    digitalWrite(AUDIO,LOW);
+    digitalWrite(salida,LOW);
     delayMicroseconds(periodo/2);
 }
