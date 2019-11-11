@@ -11,8 +11,7 @@
  #define AUDIO  11 //PIN 11 como salida de audio
  #define PTT    12 //PIN 12 utilizado para pulsar el PTT de la radio
  #define FREC   700 //Defino la frecuencia FREC en herts y su correspondiente valor en 700 para el tono del CW
- #define PIN_OUT 13 // pin out prueba de led
- #define UNIT_LENGTH 150 //duracion de cada punto, las rayas duran 3 puntos
+  #define DURACIONPTO 80 //duracion de cada punto, las rayas duran 3 puntos
 ///////////////////////////////////// SETUP ////////////////////////////////////////
 
 void setup() 
@@ -22,44 +21,38 @@ void setup()
   pinMode(PTT,OUTPUT); //seteo PTT como SALIDA
   digitalWrite(AUDIO,LOW); //establezco AUDIO en 0 para su nivel inicial
   digitalWrite(PTT,LOW); //establezco PTT en 0 para su nivel inicial
-  Serial.begin(9600); //inicializo el puerto serie para debug
-  pinMode(PIN_OUT,OUTPUT);
-  digitalWrite(PIN_OUT,LOW);
+  
+  
 }
 
 ///////////////////////////////////// MAIN /////////////////////////////////////////////
 void loop() 
 {
   
-String textomorse = codificar( "CQ CQ CQ" );
+String textomorse = codificar( "CQ CQ CQ DE XE1KK XE1KK XE1KK QUE LLAMA Y QUEDA ATENTO QRZ " );
   for(int i=0; i<=textomorse.length(); i++)
   {
     switch( textomorse[i] )
     {
       case '.': //punto
-        for (unsigned int n=0; n<UNIT_LENGTH*2; n++)
-        {
+        for (unsigned int n=0; n<=DURACIONPTO*1; n++)
           Oscilador (AUDIO,FREC);
-          
-        }
-        delay( UNIT_LENGTH );
-          
+        
+        delay( DURACIONPTO );
         break;
 
       case '-': //raya
-        for (unsigned int n=0; n<=UNIT_LENGTH*6; n++)
-        {
+        for (unsigned int n=0; n<=DURACIONPTO*3; n++)
           Oscilador (AUDIO,FREC);
-        }
-        delay( UNIT_LENGTH );
-          
+        
+        delay( DURACIONPTO );
         break;
 
-      case ' ': //gap
-        delay( UNIT_LENGTH );
+      case ' ': //espacio
+        delay( DURACIONPTO );
     }
   }
-  delay (1000);
+  delay (10000);
 }
 
 
@@ -73,7 +66,7 @@ String textomorse = codificar( "CQ CQ CQ" );
 //Ejemplo de llamada Oscilador(PUERTO,FREC);
 void Oscilador (unsigned char salida,unsigned int frecuencia)
 {
-    unsigned int periodo = 100000/frecuencia; //Defino el periodo con la formula de T=1seg/frec en  ms
+    unsigned int periodo = 1000000/frecuencia; //Defino el periodo con la formula de T=1seg/frec en  ms
     //Armo un oscilador de la mitad del periodo calculado, mitad del ciclo en alto, mitad den bajo
     digitalWrite(salida,HIGH);
     delayMicroseconds(periodo/2);
