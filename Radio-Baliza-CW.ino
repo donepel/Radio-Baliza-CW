@@ -8,10 +8,12 @@
  *****************************************************************/
 
 /////////////////////////////////// DEFINICIONES //////////////////////////////////// 
- #define AUDIO  11 //PIN 11 como salida de audio
- #define PTT    12 //PIN 12 utilizado para pulsar el PTT de la radio
- #define FREC   700 //Defino la frecuencia FREC en herts y su correspondiente valor en 700 para el tono del CW
-  #define DURACIONPTO 80 //duracion de cada punto, las rayas duran 3 puntos
+ #define AUDIO        11 //PIN 11 como salida de audio
+ #define PTT          12 //PIN 12 utilizado para pulsar el PTT de la radio
+ #define FREC         700 //Defino la frecuencia FREC en herts y su correspondiente valor en 700 para el tono del CW
+ #define DURACIONPTO  80 //duracion de cada punto, las rayas duran 3 puntos
+ #define TRANSMITO    10
+ #define PAUSA        20
 ///////////////////////////////////// SETUP ////////////////////////////////////////
 
 void setup() 
@@ -28,31 +30,51 @@ void setup()
 ///////////////////////////////////// MAIN /////////////////////////////////////////////
 void loop() 
 {
-  
-String textomorse = codificar( "CQ CQ CQ DE XE1KK XE1KK XE1KK QUE LLAMA Y QUEDA ATENTO QRZ " );
-  for(int i=0; i<=textomorse.length(); i++)
-  {
-    switch( textomorse[i] )
+ unsigned char estado=TRANSMITO;
+ while (1)
+ {
+    switch (estado)
     {
-      case '.': //punto
-        for (unsigned int n=0; n<=DURACIONPTO*1; n++)
-          Oscilador (AUDIO,FREC);
-        
-        delay( DURACIONPTO );
-        break;
+      
+      case TRANSMITO:    
+            //Caso de transmision
+            digitalWrite(PTT,HIGH); //pulso el PTT de la radio
+            delay(500); // mantengo una pausa por si en el equipo transmisor existe alguna latencia interna
+                        // para no perder los primeros caracteres que se transmiten
 
-      case '-': //raya
-        for (unsigned int n=0; n<=DURACIONPTO*3; n++)
-          Oscilador (AUDIO,FREC);
-        
-        delay( DURACIONPTO );
-        break;
-
-      case ' ': //espacio
-        delay( DURACIONPTO );
+            //Genero los tonos de cw audibles
+           String textomorse = codificar( "CQ CQ " );
+            for(int i=0; i<=textomorse.length(); i++)
+            {
+              switch( textomorse[i] )
+              {
+                case '.': //punto
+                  for (unsigned int n=0; n<=DURACIONPTO*1; n++)
+                    Oscilador (AUDIO,FREC);
+                  
+                  delay( DURACIONPTO );
+                  break;
+          
+                case '-': //raya
+                  for (unsigned int n=0; n<=DURACIONPTO*3; n++)
+                    Oscilador (AUDIO,FREC);
+                  
+                  delay( DURACIONPTO );
+                  break;
+                
+                case ' ': //espacio
+                  delay( DURACIONPTO*2 );
+              }
+            }
+            digitalWrite(PTT,LOW); //suelto el PTT de la radio
+            estado=PAUSA;
+            break;
+    
+    case PAUSA:
+          delay(1000);
     }
-  }
-  delay (10000);
+ }
+  //delay (10000);
 }
 
 
