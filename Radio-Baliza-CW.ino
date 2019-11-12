@@ -21,7 +21,7 @@
  //Definiciones de variables
  #define PAUSA        1     //tiempo de pausa en minutos
  #define FREC         1000  //Defino la frecuencia FREC en herts y su correspondiente valor en 700 para el tono del CW
- #define DURACIONPTO  50   //duracion de cada punto, las rayas duran 3 puntos
+ #define DURACIONPTO  70   //duracion de cada punto, las rayas duran 3 puntos
 
 
  
@@ -44,8 +44,8 @@ void setup()
 ///////////////////////////////////// MAIN /////////////////////////////////////////////
 void loop() 
 {
- unsigned char estado;
- estado=TRANSMISION;
+ unsigned char estado=TRANSMISION;
+ //estado=TRANSMISION;
  
  while(1)
  {
@@ -57,7 +57,7 @@ void loop()
                   delay(500); // mantengo una pausa por si en el equipo transmisor existe alguna latencia interna
                               // para no perder los primeros caracteres que se transmiten
                     //Genero los tonos de cw audibles
-                   String textomorse = codificar( "HOLA MUNDO " );
+                   String textomorse = codificar("HOLA MUNDO ");
                     for(int i=0; i<=textomorse.length(); i++)
                     {
                       switch( textomorse[i] )
@@ -69,7 +69,7 @@ void loop()
                             Oscilador (AUDIO,FREC);
                             digitalWrite(LED_CW,LOW); //Apago LED_CW CW
                           }
-                          delay( DURACIONPTO );
+                          delay(DURACIONPTO);
                           break;
                   
                         case '-': //raya
@@ -79,11 +79,11 @@ void loop()
                             Oscilador (AUDIO,FREC);
                             digitalWrite(LED_CW,LOW); //Enciendo LED_CW CW
                            }
-                           delay( DURACIONPTO );
+                           delay(DURACIONPTO);
                            break;
                         
                         case ' ': //espacio
-                          delay( DURACIONPTO*1 );
+                          delay(DURACIONPTO);
                           break;
                       }
                     }
@@ -94,8 +94,6 @@ void loop()
                                         
     case REPOSO:
                 //Caso de reposo, espo durante la pausa 
-                //for (unsigned char n=0; n<=PAUSA; n++)
-               Serial.println("Estoy en REPOSO");
                digitalWrite(LED_PAUSA,HIGH); //Aviso mediante testigo que me encuentro en periodo de pausa
                delay(1000*5*PAUSA); //demoras de 1 minuto x tiempo de PAUSA definido en seccion definiciones
                digitalWrite(LED_PAUSA,LOW); //finalizada la pausa, apago el testigo
@@ -189,7 +187,6 @@ String codificar(const char *string)
 {
   size_t i, j;
   String textomorse = "";
-  
   for( i = 0; string[i]; ++i )
   {
     for( j = 0; j < sizeof TablaMorse / sizeof *TablaMorse; ++j )
@@ -200,8 +197,7 @@ String codificar(const char *string)
         break;
       }
     }
-    textomorse += "  "; //Agrego un espacio adicional para separar los caracteres
+    textomorse += "  "; //Agrego dos espacios de tiempo adicional para separar los caracteres
    }
-
   return textomorse;  
 }
