@@ -8,14 +8,24 @@
  *****************************************************************/
 
 /////////////////////////////////// DEFINICIONES //////////////////////////////////// 
- #define AUDIO        11 //PIN 11 como salida de audio
- #define PTT          12 //PIN 12 utilizado para pulsar el PTT de la radio
- #define FREC         700 //Defino la frecuencia FREC en herts y su correspondiente valor en 700 para el tono del CW
- #define DURACIONPTO  80 //duracion de cada punto, las rayas duran 3 puntos
- #define TRANSMITO    10
- #define PAUSA        20
-///////////////////////////////////// SETUP ////////////////////////////////////////
+ //Definiciones de puertos
+ #define LED_PAUSA    9  //PIN 09 como salida luminica testigo de pausa o estado de reposo
+ #define LED_CW       10  //PIN 10 como salida luminica en CW testigo del audio emitido
+ #define AUDIO        11  //PIN 11 como salida de audio
+ #define PTT          12  //PIN 12 utilizado para pulsar el PTT de la radio
+ 
+  //Definiciones de estados
+ #define TRANSMISION  10  //Estado de transmision, pulsa el ptt y genera el tono audible
+ #define REPOSO       20  //Estado de reposo, solo es una pausa hasta que vuelve a transmitir
+ 
+ //Definiciones de variables
+ #define PAUSA        1     //tiempo de pausa en minutos
+ #define FREC         1000  //Defino la frecuencia FREC en herts y su correspondiente valor en 700 para el tono del CW
+ #define DURACIONPTO  50   //duracion de cada punto, las rayas duran 3 puntos
 
+
+ 
+///////////////////////////////////// SETUP ////////////////////////////////////////
 void setup() 
 {
   // Configuro los puertos ya sean entradas o salidas
@@ -23,58 +33,77 @@ void setup()
   pinMode(PTT,OUTPUT); //seteo PTT como SALIDA
   digitalWrite(AUDIO,LOW); //establezco AUDIO en 0 para su nivel inicial
   digitalWrite(PTT,LOW); //establezco PTT en 0 para su nivel inicial
-  
-  
+  pinMode(LED_CW,OUTPUT); //seteo LED_CW como SALIDA
+  digitalWrite(LED_CW,LOW); //establezco LED_CW en 0 para su nivel inicial
+  pinMode(LED_CW,OUTPUT); //seteo LED_CW como SALIDA
+  digitalWrite(LED_CW,LOW); //establezco LED_CW en 0 para su nivel inicial
+  pinMode(LED_PAUSA,OUTPUT); //seteo LED_PAUSA como SALIDA
+  digitalWrite(LED_PAUSA,LOW); //establezco LED_PAUSA en 0 para su nivel inicial  
 }
 
 ///////////////////////////////////// MAIN /////////////////////////////////////////////
 void loop() 
 {
- unsigned char estado=TRANSMITO;
- while (1)
+ unsigned char estado;
+ estado=TRANSMISION;
+ 
+ while(1)
  {
-    switch (estado)
+    switch(estado)
     {
-      
-      case TRANSMITO:    
-            //Caso de transmision
-            digitalWrite(PTT,HIGH); //pulso el PTT de la radio
-            delay(500); // mantengo una pausa por si en el equipo transmisor existe alguna latencia interna
-                        // para no perder los primeros caracteres que se transmiten
-
-            //Genero los tonos de cw audibles
-           String textomorse = codificar( "CQ CQ " );
-            for(int i=0; i<=textomorse.length(); i++)
-            {
-              switch( textomorse[i] )
-              {
-                case '.': //punto
-                  for (unsigned int n=0; n<=DURACIONPTO*1; n++)
-                    Oscilador (AUDIO,FREC);
+      case TRANSMISION:
+                //Caso de transmision
+                  digitalWrite(PTT,HIGH); //pulso el PTT de la radio
+                  delay(500); // mantengo una pausa por si en el equipo transmisor existe alguna latencia interna
+                              // para no perder los primeros caracteres que se transmiten
+                    //Genero los tonos de cw audibles
+                   String textomorse = codificar( "HOLA MUNDO " );
+                    for(int i=0; i<=textomorse.length(); i++)
+                    {
+                      switch( textomorse[i] )
+                      {
+                        case '.': //punto
+                          for (unsigned int n=0; n<=DURACIONPTO; n++)
+                          {
+                            digitalWrite(LED_CW,HIGH); //Enciendo LED_CW CW
+                            Oscilador (AUDIO,FREC);
+                            digitalWrite(LED_CW,LOW); //Apago LED_CW CW
+                          }
+                          delay( DURACIONPTO );
+                          break;
                   
-                  delay( DURACIONPTO );
-                  break;
-          
-                case '-': //raya
-                  for (unsigned int n=0; n<=DURACIONPTO*3; n++)
-                    Oscilador (AUDIO,FREC);
-                  
-                  delay( DURACIONPTO );
-                  break;
-                
-                case ' ': //espacio
-                  delay( DURACIONPTO*2 );
-              }
-            }
-            digitalWrite(PTT,LOW); //suelto el PTT de la radio
-            estado=PAUSA;
-            break;
-    
-    case PAUSA:
-          delay(1000);
+                        case '-': //raya
+                          for (unsigned int n=0; n<=DURACIONPTO*3; n++)
+                           {   
+                            digitalWrite(LED_CW,HIGH); //Enciendo LED_CW CW
+                            Oscilador (AUDIO,FREC);
+                            digitalWrite(LED_CW,LOW); //Enciendo LED_CW CW
+                           }
+                           delay( DURACIONPTO );
+                           break;
+                        
+                        case ' ': //espacio
+                          delay( DURACIONPTO*1 );
+                          break;
+                      }
+                    }
+                    estado=REPOSO; //Finalizada la transmision, paso a la etapa de reposo.
+                    delay(500); //mantengo una pausa por si en el equipo transmisor existe alguna latencia interna
+                    digitalWrite(PTT,LOW); //suelto el PTT de la radio
+                    
+                                        
+    case REPOSO:
+                //Caso de reposo, espo durante la pausa 
+                //for (unsigned char n=0; n<=PAUSA; n++)
+               Serial.println("Estoy en REPOSO");
+               digitalWrite(LED_PAUSA,HIGH); //Aviso mediante testigo que me encuentro en periodo de pausa
+               delay(1000*5*PAUSA); //demoras de 1 minuto x tiempo de PAUSA definido en seccion definiciones
+               digitalWrite(LED_PAUSA,LOW); //finalizada la pausa, apago el testigo
+               estado=TRANSMISION; //Finalizada la etapa re reposo, regreso a transmision.
+               break;
     }
  }
-  //delay (10000);
+  
 }
 
 
@@ -171,7 +200,7 @@ String codificar(const char *string)
         break;
       }
     }
-    textomorse += " "; //Agrego un espacio adicional para separar los caracteres
+    textomorse += "  "; //Agrego un espacio adicional para separar los caracteres
    }
 
   return textomorse;  
